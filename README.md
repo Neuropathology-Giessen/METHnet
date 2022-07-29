@@ -88,7 +88,6 @@ Holds files relevant for attention statistics as described in the paper.
 ### Expected runtime
 The demo run might take around 2 hours including tiling and feature encoding.
 Depending wheter WSIs are stored on SSD or HDD and the system specs the runtime might differ.
-## Instructions for use
 
 ## Credits
 Parts of the network were adapted from
