@@ -50,6 +50,8 @@ python3 main.py -d ["./data/wsis/"] -c "./patients.csv" -w "./data/"
 python3 main.py --data_directories=["./data/wsis/"] --csv_file="./patients.csv" --working_directory="./data/" 
 ```
 ### Data
+#### Test data
+An exemplary small data set is available on [zenodo](https://zenodo.org/record/6924901). Please place all WSIs in one folder.
 #### Whole Slide images
 Currently .ndpi and .svs files are supported. We expect the files to follow a specific naming convention in order to extract information about the slide.
 The following naming convention is used: `ID_Staining_Scanner_Magnificationx.file`. 
