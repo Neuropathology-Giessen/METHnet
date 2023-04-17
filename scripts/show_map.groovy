@@ -10,9 +10,7 @@ def tile_size_y = 256
 def tile_overlap_x = 0
 def tile_overlap_y = 0
 
-
-
-def filename = folder + '/' +  name + '_' + magnification_used + '_256_256_0_0'+'.json'
+def folder =buildFilePath(PROJECT_BASE_DIR,'/')
 def factor = magnification / magnification_used
 
 // Get Image
@@ -20,7 +18,7 @@ def plane = ImagePlane.getPlane(0, 0)
 def imageData = getCurrentImageData()
 def name = GeneralTools.getNameWithoutExtension(imageData.getServer().getMetadata().getName())
 
-def folder =buildFilePath(PROJECT_BASE_DIR,'../Attention/')ö
+def filename = folder + '/' + name + '_' + magnification_used + '_256_256_0_0'+'.json'
 
 import qupath.lib.io.GsonTools
 import qupath.lib.objects.classes.PathClassFactory

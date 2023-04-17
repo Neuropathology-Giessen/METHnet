@@ -898,7 +898,7 @@ class WholeSlideImage(object):
 
             positions = [(sx, sy) for sx in range(0, self.size[0], step_size_x)\
                 for sy in range(0, self.size[1], step_size_y)\
-                if filter.check_tissue(self.overview_threshold, (sx, sy), tile_property.get_tile_size(), self.downsampling_factor, self.setting.get_data_setting().get_min_tissue_percentage())]
+                if filter.check_tissue(self.overview_threshold, (sx, sy), tile_property.get_tile_size(), self.downsampling_factor, self.factor, self.setting.get_data_setting().get_min_tissue_percentage())]
 
             outside_list = []
             inside_list = []

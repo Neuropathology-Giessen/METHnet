@@ -322,7 +322,7 @@ class DataSetting(object):
         # Csv of patients with attributes
         self.csv_patients = csv_file
         # JSON Tiling folder
-        self.json_tiling_folder = working_directory+'Tiling'
+        self.json_tiling_folder = working_directory+'Tiling/Dataset D Full/'
         helper.create_folder(self.json_tiling_folder)
         # Attentio Map folder
         self.attention_folder = working_directory+'Attention'
@@ -338,7 +338,7 @@ class DataSetting(object):
         self.use_only_stamp = False
         
         # Set True if want to filter for marked area
-        self.filter_non_stamp = False
+        self.filter_non_stamp = True
         self.label_map_folder = ''
         if self.filter_non_stamp:
             self.label_map_folder = working_directory+' label_maps/'
@@ -369,13 +369,13 @@ class DataSetting(object):
         # Set True if want to run Monte Carlo Folds instead of k-Fold
         self.monte_carlo = True
         # Folder to memorize Monte Carlo splits
-        self.monte_carlo_folder = working_directory+'splits/'
+        self.monte_carlo_folder = working_directory+'splits/b1b2/D/'
         if self.monte_carlo:
             helper.create_folder(self.monte_carlo_folder)
 
-        self.narrow_validation = False
+        self.narrow_validation = True
         # Feature folder
-        self.feature_folder = working_directory+'Features/'
+        self.feature_folder = working_directory+'Features/Dataset D Full/'
         helper.create_folder(self.feature_folder)
 
 

@@ -59,11 +59,12 @@ def run(data, setting, train=False, features_only=False, runs_start=0, runs=10, 
             learning.train.train(data.get_train_set(), data.get_validation_set(), k, setting)
         # Test model
         balanced_accuracy, sensitivity, specificity = learning.test.test(data.get_test_set(), k, setting, draw_map=draw_map)
-
         balanced_accuracies.append(balanced_accuracy)
         sensitivities.append(sensitivity)
         specificities.append(specificity)
+        bar.next()
 
+    bar.finish()
     # Save results
     for patients in data.get_test_set():
         for p in patients:
@@ -71,8 +72,22 @@ def run(data, setting, train=False, features_only=False, runs_start=0, runs=10, 
             p.save_predicted_scores(results_folder)
             if draw_map:
                 p.save_map()
-            
+    
+    balanced_accuracies = np.array(balanced_accuracies)
+    sensitivities = np.array(sensitivities)
+    specificities = np.array(specificities)
+    print(np.mean(balanced_accuracies))
+    print(1.96*np.std(balanced_accuracies))
+    print(np.mean(sensitivities))
+    print(1.96*np.std(sensitivities))
+    print(np.mean(specificities))
+    print(1.96*np.std(specificities))
 
+    print(sensitivities)
+    print(specificities)
+    combined = np.abs(sensitivities-specificities)
+    print(np.mean(combined))
+    print(1.96*np.std(combined))
 
 def run_train(data_directories, csv_file, working_directory):
     """ Set up setting and dataset and run training/testing
@@ -81,7 +96,7 @@ def run_train(data_directories, csv_file, working_directory):
 
     data = dataset.Dataset(s)
     
-    run(data, s, train=True, features_only=False, runs_start=0,runs=s.get_network_setting().get_runs(), draw_map=True)
+    run(data, s, train=False, features_only=False, runs_start=0,runs=s.get_network_setting().get_runs(), draw_map=True)
 
 
 

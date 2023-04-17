@@ -336,6 +336,9 @@ class Dataset(object):
             if os.path.exists(indices_file_name):
                 df = pd.read_csv(indices_file_name)
                 identifications = df['Order'].to_list()
+
+                class_patients = [patient for patient in class_patients if patient.get_identifier() in identifications]
+                n_in_class = len(class_patients)
             else:
                 all_indices = np.arange(n_in_class)
                 # Randomly shuffle patients

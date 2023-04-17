@@ -145,11 +145,12 @@ class Patient(object):
         # Get correct file ending
         file_ending = image_property.get_file_ending()
         # All WSIs in folder with correct ID
-        possible_wsis = [f for f in os.listdir(data_folder) if f.startswith(str(self.identifier))]
+        histological_identifier = 'B' + str(int(self.identifier.split('-')[0].split("B")[1])) + '-' + self.identifier.split("-")[1]
+        possible_wsis = [f for f in os.listdir(data_folder) if f.startswith(str(histological_identifier))]
         # Filter for those with correct file format 
         possible_wsis = [f for f in possible_wsis if f.endswith(file_ending)]
         # Check if additional information is in file name
-        
+ 
         # Filter for those with correct staining
         possible_wsis = [f for f in possible_wsis if f.split('_')[1] == image_property.get_staining()]
         # Filter for those with correct scanner
