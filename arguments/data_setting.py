@@ -1,4 +1,4 @@
-from tkinter import Image
+#from tkinter import Image
 import utils.helper as helper
 from albumentations import (RandomCrop, Normalize, Compose)
 
@@ -325,7 +325,7 @@ class DataSetting(object):
         self.json_tiling_folder = working_directory+'Tiling/Dataset D Full/'
         helper.create_folder(self.json_tiling_folder)
         # Attentio Map folder
-        self.attention_folder = working_directory+'Attention'
+        self.attention_folder = working_directory+'Evaluation/b1b2/Attention'
         helper.create_folder(self.attention_folder)
 
         # Choose which WSIs to use - detailed explanation in class
@@ -379,10 +379,10 @@ class DataSetting(object):
         helper.create_folder(self.feature_folder)
 
 
-        self.results_folder = working_directory+'Results/'
+        self.results_folder = working_directory+'Evaluation/Results/'
         helper.create_folder(self.results_folder)
 
-        self.attention_statistics_folder = working_directory+'Attention_Statistics/'
+        self.attention_statistics_folder = working_directory+'Evaluation/Attention_Statistics/'
         helper.create_folder(self.attention_statistics_folder)
 
     def get_excluded_patients(self):

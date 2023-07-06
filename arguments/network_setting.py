@@ -71,7 +71,7 @@ class NetworkSetting(object):
 
         self.train_model = False
 
-        self.model_folder = working_directory+'Models/Dataset C/benign-1_benign-2/'
+        self.model_folder = working_directory+'/Models/Dataset A/benign-1_benign-2/'
         helper.create_folder(self.model_folder)
 
         self.dropout = 0.25
@@ -87,9 +87,9 @@ class NetworkSetting(object):
 
         self.verbose = True
 
-        self.epochs = 3
+        self.epochs = 200
 
-        self.runs = 1#50
+        self.runs = 50
 
     def get_batch_size(self):
         """ Return batch_size attribute
