@@ -11,6 +11,7 @@ import json
 
 import multiprocessing
 from functools import partial
+from preprocessing.filter import multiprocess_filtering
 
 from datastructure.tile import Tile as Tile
 
@@ -21,52 +22,7 @@ from scipy.stats import rankdata
 
 from matplotlib import pyplot as plt
 
-def multiprocess_filtering(x, otsu_value, filter_background, filter_blood, tissue_percentage, tile_property, level):
-    """ Check wheter at a position a valid is tile is possible. Filtering may be applied to check for background and blood.
-
-    Parameters
-    ----------
-    x : tuple
-        (Image, Position) where Image is a pillow Image of the Tile and Position is a tuple of its location in pixel (x,y) 
-    otsu_value : int
-        The original otsu value as obtained by filtering the overview image
-    filter_background : bool
-        True if want to exclude background from tissue percentage
-    filter_blood : bool
-        True if want to exclude blood from tissue percentage
-    tissue_percentage : float
-        Value (should be between 0 and 1) of minimum amount of tissue on Tile
-    tile_property : TileProperty
-        Properties of the tile to generate
-    level : int
-        Level of the image pyramid where tile was extracted
-
-    Returns
-    -------
-    Tile
-        Tile object if minimum percentage of tissue is in image else None
-    """
-    # Get image region
-    region = x[0]
-    # Get position of image region
-    position = x[1]
-    # If want to filter for background or blood
-    if filter_background or filter_blood:
-        # Check single tile if it contains enough tissue
-        is_tissue = filter.check_tissue_tile(region, otsu_value, tissue_percentage, filter_background, filter_blood)
-    else:
-        # Else it is tissue
-        is_tissue = True
-    
-    # If valid Tile create it
-    if is_tissue:
-        # Create Tile object
-        tile_obj = Tile(position[0], position[1], tile_property.get_tile_size(),
-        tile_property.get_input_size(), tile_property.get_augmentations(), level)
-        # Return tile object
-        return tile_obj
-    # Else return None
-    return None
+from PIL import Image
 
 class WholeSlideImage(object):
     """
@@ -251,65 +207,49 @@ class WholeSlideImage(object):
         self.image = None
 
         # JSON Tiling Folder and File Name
-        self.json_folder = self.setting.get_data_setting().get_json_tiling_folder()
+        self.json_folder = self.setting.get_data_setting().get_json_tiling_folder() + '/' +\
+            str(self.image_property.get_staining()) + '_' + \
+            str(self.image_property.get_scanner()) + '_' + \
+            str(self.image_property.get_magnification()) + '_' + \
+            str(self.image_property)
+
 
         self.json_file_name_scheme = self.json_folder + '/' + self.file_name.split('.')[0] +\
-            '_' + str(self.image_property.get_used_magnification())
+            '_' + str(self.image_property.get_used_magnification()) #TODO
 
-
-        # JSON Attention Folder and File Name
-        self.attention_folder = self.setting.get_data_setting().get_attention_folder()
-
-        self.attention_file_name_scheme = self.attention_folder + '/' + self.file_name.split('.')[0] +\
-            '_' + str(self.image_property.get_used_magnification())
-
-        # Open WSI
-        self.load_wsi()
 
         # Get best Level of image pyramid to use according to used magnification and native magnification
         self.used_level = self.image.get_best_level_for_downsample(float(self.image_property.get_magnification())/float(self.image_property.get_used_magnification()))
-        
+
+        # Open WSI
+        self.load_wsi()
         # Get overview image
         self.overview_image, downsampling = reader.get_overview(self.image)
+        # Close WSI    
+        self.close_wsi()
 
         # Downsampling factor of overview compared to extracted regions
         self.downsampling_factor = downsampling / self.image.level_downsamples[self.used_level]
         # Factor between highest resolution and overview
         self.factor = downsampling / self.image.level_downsamples[0]
 
+        # Size of WSI at used level
+        self.size = self.image.level_dimensions[0]
+
         # Threshold overview image
         self.overview_threshold, self.otsu_value = filter.filter_overview_image(self.overview_image)
         
-        # Check wheter tissue outside marked area should be filtered
-        if self.setting.get_data_setting().get_filter_non_stamp():
-            self.label_file_name = self.identifier +\
+        self.label_file_name = self.identifier +\
             '_' + self.image_property.get_staining() +\
             '_' + self.image_property.get_scanner() +\
             '_' + str(self.image_property.get_magnification()) +\
             'x-labels.png'
-
-            if os.path.exists(self.setting.get_data_setting().get_label_map_folder()+self.label_file_name):
-                from PIL import Image
-
-                self.label_map = Image.open(self.setting.get_data_setting().get_label_map_folder()+self.label_file_name)
-            else:
-                # Default map is complete WSI
-                self.label_map = np.ones(np.shape(self.overview_threshold))
-            
-            # Filter tissue according to label map
-            self.overview_threshold = self.overview_threshold * self.label_map
-        else:
-            self.label_file_name = ""
-            self.label_map = None
-
-
-        # Size of WSI at used level
-        self.size = self.image.level_dimensions[0]
+        self.label_map = np.ones(np.shape(self.overview_threshold))
 
         # Load Tiles for WSI
         self.tiles = []
-        # Close WSI    
-        self.close_wsi()
+        self.tiles_inside = []
+        self.tiles_outside = []
 
         # Create single feature vector
         feature_dim = self.setting.get_network_setting().get_F()
@@ -321,7 +261,7 @@ class WholeSlideImage(object):
         self.feature_folder = self.setting.get_data_setting().get_feature_folder() +\
             self.image_property.get_staining() + '_' +\
             str(self.image_property.get_magnification()) + '_' +\
-            str(self.image_property.get_used_magnification()) + '/'
+            str(self.image_property.get_used_magnification()) + '/'     #TODO
     
         helper.create_folder(self.feature_folder)
 
@@ -333,12 +273,21 @@ class WholeSlideImage(object):
                 '_' + str(tile_property.get_tile_size()[0]) +\
                 '_' + str(tile_property.get_tile_size()[1]) +\
                 '_' + str(tile_property.get_tile_overlap()[0]) +\
-                '_' + str(tile_property.get_tile_overlap()[1]) + '.pkl'
+                '_' + str(tile_property.get_tile_overlap()[1]) + \
+                '_' + str(tile_property.get_filter_mask()) +\
+                '_' + str(tile_property.get_filter_background()) + \
+                '_' + str(tile_property.get_filter_blood()) + \
+                '_' + str(tile_property.get_min_tissue_percentage()) + \
+                '.pkl'
             
             self.feature_file_names.append(feature_file_name)
 
-        self.tiles_inside = []
-        self.tiles_outside = []
+        # JSON Attention Folder and File Name
+        self.attention_folder = self.setting.get_data_setting().get_attention_folder()
+
+        self.attention_file_name_scheme = self.attention_folder + '/' + self.file_name.split('.')[0] +\
+            '_' + str(self.image_property.get_used_magnification()) #TODO
+        
 
     def load_wsi(self):
         """ Opens OpenSlideObject
@@ -377,6 +326,10 @@ class WholeSlideImage(object):
                 '_' + str(tile_property.get_tile_size()[1]) +\
                 '_' + str(tile_property.get_tile_overlap()[0]) +\
                 '_' + str(tile_property.get_tile_overlap()[1]) +\
+                '_' + str(tile_property.get_filter_mask()) +\
+                '_' + str(tile_property.get_filter_background()) + \
+                '_' + str(tile_property.get_filter_blood()) + \
+                '_' + str(tile_property.get_min_tissue_percentage()) + \
                 '.json'
 
             # Check if JSON already existing and should skip already tiled WSIs
@@ -394,9 +347,17 @@ class WholeSlideImage(object):
             step_size_y = (1+self.used_level)*(tile_property.get_tile_size()[1] - tile_property.get_tile_overlap()[1])
 
             # Get possible positions which are not already background according to overview image and minimum tissue percentage
+            if tile_property.get_filter_mask():
+                label_map_folder = tile_property.get_mask_folder()
+                if os.path.exists(label_map_folder+self.label_file_name):
+                    label_map_tp = Image.open(label_map_folder+self.label_file_name)
+                    filter_mask = self.overview_threshold * label_map_tp
+            else:
+                    filter_mask = self.overview_threshold
+
             positions = [(sx, sy) for sx in range(0, self.size[0], step_size_x)\
                 for sy in range(0, self.size[1], step_size_y)\
-                if filter.check_tissue(self.overview_threshold,(sx, sy), tile_property.get_tile_size(), self.downsampling_factor, self.factor, self.setting.get_data_setting().get_min_tissue_percentage())]
+                if filter.check_tissue(filter_mask,(sx, sy), tile_property.get_tile_size(), self.downsampling_factor, self.factor, tile_property.get_min_tissue_percentage())]
             
             # Progress bar
             bar = IncrementalBar('Loading Tiles:', max=len(positions))
@@ -404,7 +365,7 @@ class WholeSlideImage(object):
             # Load image tiles
             for position in positions:
                 # Image loading only necessary if want to filter each tile individually again
-                if self.setting.get_data_setting().get_filter_background():
+                if tile_property.get_filter_background() or tile_property.get_filter_blood():
                     # Read image tile at position
                     image = reader.read_region(self.image, corner=position, size=tile_property.get_tile_size(), level_downsamples=self.used_level)
                 else:
@@ -420,9 +381,6 @@ class WholeSlideImage(object):
             pool = multiprocessing.Pool()
             # Create multiprocessing filtering function, otsu value according to overview
             partial_f = partial(multiprocess_filtering, otsu_value=self.otsu_value,
-                filter_background=self.setting.get_data_setting().get_filter_background(),
-                filter_blood=self.setting.get_data_setting().get_filter_blood(),
-                tissue_percentage=self.setting.get_data_setting().get_min_tissue_percentage(),
                 tile_property=tile_property,
                 level = self.used_level
             )

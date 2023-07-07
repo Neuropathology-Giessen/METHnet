@@ -89,6 +89,7 @@ def run(data, setting, train=False, features_only=False, runs_start=0, runs=10, 
     print(np.mean(combined))
     print(1.96*np.std(combined))
 
+
 def run_train(data_directories, csv_file, working_directory):
     """ Set up setting and dataset and run training/testing
     """
@@ -138,6 +139,5 @@ def main(argv):
 
 
 if __name__=="__main__":
-    #run_train()
     main(sys.argv[1:])
 

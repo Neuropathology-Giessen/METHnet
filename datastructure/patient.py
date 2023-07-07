@@ -76,7 +76,7 @@ class Patient(object):
 
     def load_wsis(self):
         """ Checks data folder and creates a WholeSlideImage object for each WSI file with matching identifier and image properties in file name
-        Image properties and data folders as specified in data setting. If Use only stamp specified in data setting filtered for those slides where
+        Image properties and data folders as specified in data setting. If Use only stamp specified in image property filtered for those slides where
         diagnosis is from.
 
         Returns
@@ -104,10 +104,14 @@ class Patient(object):
                     # Create WSI object
                     wsi = WholeSlideImage(self.setting, wsi_identifier, image_property, data_folder)
                     # If using only such from a stamp check
-                    if self.setting.get_data_setting().get_use_only_stamp():
+                    if image_property.get_use_only_stamp():
                         # Get stamp locations
                         stamp_blocks = self.get_diagnosis().get_stamp_blocks()
                         stamp_subblocks = self.get_diagnosis().get_stamp_subblocks()
+                        if (len(stamp_blocks) != len(stamp_subblocks)) or (len(stamp_blocks) == 0) or (len(stamp_subblocks) == 0):
+                            wsi.set_tiles(wsi.load_tiles())
+                            wsis_property.append(wsi)
+                            continue
                         # Check wheter it is within
                         for i in range(len(stamp_blocks)):
                             if wsi.get_block() == stamp_blocks[i] and wsi.get_subblock() == stamp_subblocks[i]:
@@ -145,7 +149,7 @@ class Patient(object):
         # Get correct file ending
         file_ending = image_property.get_file_ending()
         # All WSIs in folder with correct ID
-        histological_identifier = 'B' + str(int(self.identifier.split('-')[0].split("B")[1])) + '-' + self.identifier.split("-")[1]
+        histological_identifier = 'B' + str(int(self.identifier.split('-')[0].split("B")[1])) + '-' + self.identifier.split("-")[1] # TODO not perfect --> Bnums with leading zeros should be checked
         possible_wsis = [f for f in os.listdir(data_folder) if f.startswith(str(histological_identifier))]
         # Filter for those with correct file format 
         possible_wsis = [f for f in possible_wsis if f.endswith(file_ending)]

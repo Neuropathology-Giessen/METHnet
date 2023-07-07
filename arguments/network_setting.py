@@ -71,7 +71,7 @@ class NetworkSetting(object):
 
         self.train_model = False
 
-        self.model_folder = working_directory+'/Models/Dataset A/benign-1_benign-2/'
+        self.model_folder = working_directory+'/Models/GBM/'    #TODO
         helper.create_folder(self.model_folder)
 
         self.dropout = 0.25

@@ -12,6 +12,14 @@ class ClassSetting(object):
         Dictionary holding per methylation subclass a minimum confidence score will be used if filter_methylation_confidence is True
     class_attribute : string
         Name of column in .csv to use for classification problem
+    methylation_class_attribute : string
+        Name of column in .csv for EPIC classification
+    methylation_class_score_attribute : float
+        Name of column in .csv for EPIC classification score
+    methylation_subclass_attribute : string
+        Name of column in .csv for EPIC sub-classification
+    methylation_subclass_score_attribute : float
+        Name of column in .csv for EPIC sub-classification score
     class_labels : dict {string : int}
         Class label per used value of classification attribute - must hold all values starting from 0
     n_classes : int
@@ -31,6 +39,14 @@ class ClassSetting(object):
         Return confidence_scores_subclass
     get_class_attribute()
         Return class_attribute
+    get_methylation_class_attribute()
+        Return methylation_class_attribute
+    get_methylation_class_score_attribute()
+        Return methylation_class_score_attribute
+    get_methylation_subclass_attribute()
+        Return methylation_subclass_attribute
+    get_methylation_subclass_score_attribute()
+        Return methylation_subclass_score_attribute
     get_class_labels()
         Return class_labels
     get_n_classes()
@@ -56,6 +72,13 @@ class ClassSetting(object):
         'Meningeoma Malignant':0.5}
         # Class attribute for classification
         self.class_attribute = "Methylation class family member (EPIC) Meningioma-Classifier"
+        # Methylation class attribute
+        self.methylation_class_attribute = "Methylation Classes Meningioma-Classifier"
+        self.methylation_class_score_attribute = "probability class"
+        # Methylation subclass attribute
+        self.methylation_subclass_attribute = "Methylation class family member (EPIC) Meningioma-Classifier"
+        self.methylation_subclass_score_attribute = "probability subclass"
+
         # Class labels according to class attribute - determines valid samples
         self.class_labels = {
             "Meningioma benign-1":0,
@@ -104,7 +127,43 @@ class ClassSetting(object):
             class_attribute
         """
         return self.class_attribute
-
+    
+    def get_methylation_class_attribute(self):
+        """ Return methylation_class_attribute
+        Returns
+        -------
+        string
+            methylation_class_attribute
+        """
+        return self.methylation_class_attribute
+    
+    def get_methylation_class_score_attribute(self):
+        """ Return methylation_class_score_attribute
+        Returns
+        -------
+        string
+            methylation_class_score_attribute
+        """
+        return self.methylation_class_score_attribute
+    
+    def get_methylation_subclass_attribute(self):
+        """ Return methylation_subclass_attribute
+        Returns
+        -------
+        string
+            methylation_subclass_attribute
+        """
+        return self.methylation_subclass_attribute
+    
+    def get_methylation_subclass_score_attribute(self):
+        """ Return methylation_subclass_score_attribute
+        Returns
+        -------
+        string
+            methylation_subclass_score_attribute
+        """
+        return self.methylation_subclass_score_attribute
+    
     def get_class_labels(self):
         """ Return class_labels
         Returns

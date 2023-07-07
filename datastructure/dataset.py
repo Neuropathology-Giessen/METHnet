@@ -121,11 +121,17 @@ class Dataset(object):
             class_attribute = row[self.setting.get_class_setting().get_class_attribute()]
 
             # Methylation class MNG and score
-            methylation_class = row['Methylation Classes Meningioma-Classifier']
-            methylation_class_score = row['probability class']
+            methylation_class = row[self.setting.get_class_setting().get_methylation_class_attribute()]
+
+            methylation_class_score = 1.0
+            if self.setting.get_class_setting().get_methylation_class_score_attribute() in df.columns:
+                methylation_class_score = row[self.setting.get_class_setting().get_methylation_class_score_attribute()]
             # Methylation subclass MNG and score
-            methylation_subclass = row['Methylation class family member (EPIC) Meningioma-Classifier']
-            methylation_subclass_score = row['probability subclass']
+            methylation_subclass = row[self.setting.get_class_setting().get_methylation_subclass_attribute()]
+
+            methylation_subclass_score = 1.0
+            if self.setting.get_class_setting().get_methylation_subclass_score_attribute() in df.columns:
+                methylation_subclass_score = row[self.setting.get_class_setting().get_methylation_subclass_score_attribute()]
 
             stamp_blocks = ['']
             if 'Block' in df.columns:

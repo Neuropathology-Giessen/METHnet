@@ -27,9 +27,9 @@ class FeatureSetting(object):
         """
         """
         # Set True if want to skip already encoded features
-        self.skip_existing = True
+        self.skip_existing = True   #TODO automatize check
         # Set True if want to augment tiles according to augmentation sequence during training
-        self.augment_tiles = True
+        self.augment_tiles = True   #TODO split in augmentation and normalization sequence?
         # Batch Size for feature encoding
         self.batch_size = 256
         # Feature Dimension to use

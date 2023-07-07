@@ -18,24 +18,7 @@ def read_wsi(file_name):
 
     return file_reader[file_ending](file_name)
 
-def read_svs(file_name):
-    """ Open WSI .svs
-
-    Parameters
-    ----------
-    file_name : string
-        Path to .svs WSI
-
-    Returns
-    -------
-    OpenSlideObject
-        The WSI
-    """
-    wsi = slide.open_slide(file_name)
-
-    return wsi
-
-def read_ndpi(file_name):
+def read_openslide(file_name):
     """ Open WSI .ndpi
 
     Parameters
@@ -100,6 +83,6 @@ def get_overview(wsi):
 
     return overview_image, downsampling_factor
 
-file_reader = {'svs':read_svs, 'ndpi':read_ndpi}
+file_reader = {'svs':read_openslide, 'ndpi':read_openslide}
 scanner = {'svs':'Leica', 'ndpi':'Hamamatsu'}
 

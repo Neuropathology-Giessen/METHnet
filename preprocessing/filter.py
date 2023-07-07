@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 
+from datastructure.tile import Tile
+
+
 
 def filter_overview_image(img):
     """ Filter the background of the overview image according to Otus's Thresholding
@@ -37,6 +40,10 @@ def filter_overview_image(img):
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, structuring_element)
 
     return img, otsu_value
+
+
+def apply_filter(img):
+    pass
 
 def filtering_blood(img):
     """ Filter blood from Image according to fixed red values
@@ -186,3 +193,45 @@ def check_tissue_tile(region, otsu_value, percentage=0.1, filter_background=True
         
     # if more tissue than blood and over percentage tissue return true
     return score >= percentage
+
+def multiprocess_filtering(x, otsu_value, tile_property, level):
+    """ Check wheter at a position a valid is tile is possible. Filtering may be applied to check for background and blood.
+
+    Parameters
+    ----------
+    x : tuple
+        (Image, Position) where Image is a pillow Image of the Tile and Position is a tuple of its location in pixel (x,y) 
+    otsu_value : int
+        The original otsu value as obtained by filtering the overview image
+    tile_property : TileProperty
+        Properties of the tile to generate
+    level : int
+        Level of the image pyramid where tile was extracted
+
+    Returns
+    -------
+    Tile
+        Tile object if minimum percentage of tissue is in image else None
+    """
+    # Get image region
+    region = x[0]
+    # Get position of image region
+    position = x[1]
+    # If want to filter for background or blood
+    if tile_property.get_filter_background() or tile_property.get_filter_blood():
+        # Check single tile if it contains enough tissue
+        is_tissue = check_tissue_tile(region, otsu_value, tile_property.get_min_tissue_percentage(),
+                                       tile_property.get_filter_background(), tile_property.get_filter_blood())
+    else:
+        # Else it is tissue
+        is_tissue = True
+    
+    # If valid Tile create it
+    if is_tissue:
+        # Create Tile object
+        tile_obj = Tile(position[0], position[1], tile_property.get_tile_size(),
+        tile_property.get_input_size(), tile_property.get_augmentations(), level)
+        # Return tile object
+        return tile_obj
+    # Else return None
+    return None
